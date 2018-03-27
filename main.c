@@ -39,6 +39,9 @@
 #include "clock_config.h"
 #include "MK64F12.h"
 #include "fsl_debug_console.h"
+#include "EEPROM.h"
+#include "RTC.h"
+#include<stdlib.h>
 /* TODO: insert other include files here. */
 
 /* TODO: insert other definitions and declarations here. */
@@ -54,13 +57,17 @@ int main(void) {
     BOARD_InitBootPeripherals();
   	/* Init FSL debug console. */
     BOARD_InitDebugConsole();
-
-
+    I2Cinit();
+    PRINTF("START");
     /* Force the counter to be placed into memory. */
     volatile static int i = 0 ;
     /* Enter an infinite loop, just incrementing a counter. */
     while(1) {
-        i++ ;
+    	//setRTC_sec(20);
+    	PRINTF("\rEL SEGUNDO ES : %d\n", readRTC_sec());
+    //	writeMemory(0x20,10);
+    //	PRINTF("\rEL DATO ES : %d\n",readMemory(0x20));
+    	for(volatile int d =100000;d==0;d--){}
     }
     return 0 ;
 }
