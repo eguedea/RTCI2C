@@ -63,11 +63,24 @@ int main(void) {
     volatile static int i = 0 ;
     /* Enter an infinite loop, just incrementing a counter. */
     while(1) {
-    	//setRTC_sec(20);
+       	writeMemory(0x20,99);
+       	PRINTF("\rEL DATO ES : %d\n",readMemory(0x20));
+
+    	setRTC_sec(20);
+
     	PRINTF("\rEL SEGUNDO ES : %d\n", readRTC_sec());
+
+       	PRINTF("\rEL DATO ES : %d\n",readMemory(0x20));
+       	writeMemory(0x20,99);
+
+    	setRTC_sec(20);
+
+       	writeMemory(0x20,99);
+       	PRINTF("\rEL DATO ES : %d\n",readMemory(0x20));
+
+    	setRTC_sec(20);
     //	writeMemory(0x20,10);
     //	PRINTF("\rEL DATO ES : %d\n",readMemory(0x20));
-    	for(volatile int d =100000;d==0;d--){}
     }
     return 0 ;
 }

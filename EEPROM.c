@@ -28,7 +28,7 @@ static void i2c_master_callback(I2C_Type *base, i2c_master_handle_t *handle,
 	if (status == kStatus_Success)
 	{
 		g_MasterCompletionFlagprom = true;
-		PRINTF("SUCCESS");
+		PRINTF("\rSUCCESS\n");
 	}
 }
 
@@ -52,6 +52,7 @@ void writeMemory(uint16_t add,uint8_t data)
 	masterXfer.data = &datah;
 	masterXfer.dataSize = 1;
 	masterXfer.flags = kI2C_TransferDefaultFlag;
+
 
 	I2C_MasterTransferNonBlocking(I2C0, &g_m_handle,&masterXfer);
 
@@ -85,10 +86,6 @@ uint8_t readMemory(uint16_t add)
 
 	I2C_MasterTransferNonBlocking(I2C0,  &g_m_handle,&masterXfer);
 
-	while (!g_MasterCompletionFlagprom)
-	{
-	}
-	g_MasterCompletionFlagprom = false;
 
 	uint8_t read_data;
 
@@ -104,6 +101,8 @@ uint8_t readMemory(uint16_t add)
 
 	while (!g_MasterCompletionFlagprom){}
 	g_MasterCompletionFlagprom = false;
+
+	for(int i=100000000;i==0;i--){}
 
 	return read_data;
 }

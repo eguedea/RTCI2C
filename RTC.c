@@ -18,6 +18,7 @@
 #define MONTHADDRESS (0x07)
 #define YEARADDRESS (0x08)
 #define RTCADDRESS (0x51)
+#define ADDRESS_SIZE (1)
 
 volatile bool g_MasterCompletionFlag = false;
 //uint8_t status;
@@ -36,16 +37,16 @@ static void i2c_master_callback(I2C_Type *base, i2c_master_handle_t *handle,
 
 void I2Cinit()
 {
-	CLOCK_EnableClock(kCLOCK_PortE);
+	CLOCK_EnableClock(kCLOCK_PortB);
 	CLOCK_EnableClock(kCLOCK_I2c0);
 
 	port_pin_config_t config_i2c =
-		{ kPORT_PullDisable, kPORT_SlowSlewRate, kPORT_PassiveFilterDisable,
-		        kPORT_OpenDrainDisable, kPORT_LowDriveStrength, kPORT_MuxAlt5,
+		{ kPORT_PullUp, kPORT_SlowSlewRate, kPORT_PassiveFilterDisable,
+		        kPORT_OpenDrainEnable, kPORT_LowDriveStrength, kPORT_MuxAlt2,
 		        kPORT_UnlockRegister, };
 
-		PORT_SetPinConfig(PORTE, 24, &config_i2c);
-		PORT_SetPinConfig(PORTE, 25, &config_i2c);
+		PORT_SetPinConfig(PORTB, 2, &config_i2c);
+		PORT_SetPinConfig(PORTB, 3, &config_i2c);
 
 
 
@@ -64,33 +65,36 @@ uint8_t readRTC_sec()
 
 	uint8_t secadd = SECONDSADDRESS;
 
+
 	masterXfer.slaveAddress = RTCADDRESS;
 	masterXfer.direction = kI2C_Write;
 	masterXfer.subaddress = 0;
 	masterXfer.subaddressSize = 0;
 	masterXfer.data = &secadd;
-	masterXfer.dataSize = 0;
+	masterXfer.dataSize = 1;
 	masterXfer.flags = kI2C_TransferNoStopFlag;
 
-	I2C_MasterTransferNonBlocking(I2C0,  &g_m_handle,&masterXfer);
+	I2C_MasterTransferNonBlocking(I2C0,&g_m_handle,&masterXfer);
 
-
-	uint8_t read_data;
+	uint8_t seconds;
 
 	masterXfer.slaveAddress = RTCADDRESS;
 	masterXfer.direction = kI2C_Read;
 	masterXfer.subaddress = 0;
 	masterXfer.subaddressSize = 0;
-	masterXfer.data = &read_data;
-	masterXfer.dataSize = 1;
+	masterXfer.data = &seconds;
+	masterXfer.dataSize = ADDRESS_SIZE;
 	masterXfer.flags = kI2C_TransferRepeatedStartFlag;
 
-	I2C_MasterTransferNonBlocking(I2C0, &g_m_handle,&masterXfer);
+	I2C_MasterTransferNonBlocking(I2C0,&g_m_handle,&masterXfer);
 
-	while (!g_MasterCompletionFlag){}
-	g_MasterCompletionFlag = false;
+	//while (!g_MasterCompletionFlag){}
+		//g_MasterCompletionFlag = false;
 
-	return read_data;
+	for(int i=100000000;i==0;i--){}
+
+
+	return seconds;
 
 }
 
@@ -207,7 +211,7 @@ uint8_t readRTC_day()
 
 	I2C_MasterTransferNonBlocking(I2C0, &g_m_handle,&masterXfer);
 
-					while (!g_MasterCompletionFlag){}
+	while (!g_MasterCompletionFlag){}
 	g_MasterCompletionFlag = false;
 
 	return days;
@@ -274,6 +278,10 @@ uint8_t readRTC_year()
 	masterXfer.flags = kI2C_TransferNoStopFlag;
 
 	I2C_MasterTransferNonBlocking(I2C0, &g_m_handle,&masterXfer);
+	while (!g_MasterCompletionFlag)
+	{
+	}
+	g_MasterCompletionFlag = false;
 
 	uint8_t years;
 
@@ -307,6 +315,7 @@ void setRTC_sec(uint8_t sec)
 	I2C_MasterInit(I2C0, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 	I2C_MasterTransferCreateHandle(I2C0, &g_m_handle,i2c_master_callback, NULL);
 
+
 	uint8_t seconds = sec;
 
 	masterXfer.slaveAddress = RTCADDRESS;
@@ -317,12 +326,11 @@ void setRTC_sec(uint8_t sec)
 	masterXfer.dataSize = 1;
 	masterXfer.flags = kI2C_TransferDefaultFlag;
 
-	I2C_MasterTransferNonBlocking(I2C0, &g_m_handle,&masterXfer);
 
-	while (!g_MasterCompletionFlag)
-	{
-	}
-	g_MasterCompletionFlag = false;
+	I2C_MasterTransferNonBlocking(I2C0,&g_m_handle,&masterXfer);
+
+	while (!g_MasterCompletionFlag){}
+		g_MasterCompletionFlag = false;
 }
 
 
